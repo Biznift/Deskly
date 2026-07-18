@@ -1,0 +1,140 @@
+.shell {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+.glow {
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 70%;
+  background:
+    radial-gradient(ellipse 50% 60% at 30% 40%, #1e4a7a 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 80% 20%, #0d3d5c 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.panel {
+  position: relative;
+  width: min(420px, 100%);
+  z-index: 1;
+}
+
+.brand {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.4rem, 8vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.title {
+  margin: 0 0 0.65rem;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.lead {
+  margin: 0 0 1.5rem;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 0.95rem;
+}
+
+.form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.label,
+.signal {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.input,
+.signal input {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg1) 80%, transparent);
+  color: var(--ink);
+  font-size: 1.25rem;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.input:focus,
+.signal input:focus {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--line));
+}
+
+.signal {
+  margin-top: 1.5rem;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.check input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent);
+}
+
+.signal input {
+  font-size: 0.9rem;
+  letter-spacing: 0;
+}
+
+.primary {
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  font-weight: 650;
+  background: var(--accent);
+  color: #041018;
+}
+
+.primary:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.status {
+  margin: 1rem 0 0;
+  min-height: 1.4em;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.status[data-status="error"],
+.status[data-status="rejected"],
+.status[data-status="timeout"],
+.status[data-status="ended"] {
+  color: var(--danger);
+}
+
+.status[data-status="live"],
+.status[data-status="waiting"],
+.status[data-status="negotiating"] {
+  color: var(--ok);
+}

@@ -1,0 +1,35 @@
+:root {
+  --bg0: #0f1419;
+  --bg1: #1a2836;
+  --ink: #e8eef6;
+  --muted: #8b9bb0;
+  --accent: #3d9cf0;
+  --danger: #e85d5d;
+  --ok: #4caf7a;
+  --line: rgba(232, 238, 246, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  color: var(--ink);
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  background:
+    radial-gradient(ellipse 80% 55% at 15% -5%, #1a3555 0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 100% 100%, #123048 0%, transparent 50%),
+    var(--bg0);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}

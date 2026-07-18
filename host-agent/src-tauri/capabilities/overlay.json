@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "overlay",
+  "description": "Always-on-top session control bar",
+  "windows": ["session-overlay"],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:window:allow-close",
+    "core:window:allow-show",
+    "core:window:allow-set-focus",
+    "core:window:allow-set-always-on-top"
+  ]
+}

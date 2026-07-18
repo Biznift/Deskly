@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+turn/.env
+
+# Build outputs
+dist/
+.next/
+out/
+target/
+host-agent/src-tauri/target/
+
+# Logs & OS
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Tauri / Rust
+host-agent/src-tauri/gen/schemas/*.json
+!host-agent/src-tauri/gen/schemas/.gitkeep
+
+# Misc
+*.msi
+*.exe
+!**/scripts/**

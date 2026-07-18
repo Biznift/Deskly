@@ -1,0 +1,144 @@
+:root {
+  --bg0: #0f1419;
+  --bg1: #1a2332;
+  --ink: #e8eef6;
+  --muted: #8b9bb0;
+  --accent: #3d9cf0;
+  --danger: #e85d5d;
+  --ok: #4caf7a;
+  --line: rgba(232, 238, 246, 0.12);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, #1e3a5f 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 100%, #16304a 0%, transparent 50%),
+    var(--bg0);
+}
+
+.panel {
+  width: min(420px, 92vw);
+  padding: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--bg1) 88%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.id {
+  margin: 0 0 1rem;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+}
+
+.status {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.form {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+input {
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg0);
+  color: var(--ink);
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.primary {
+  background: var(--accent);
+  color: #041018;
+}
+
+.danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 50%, transparent);
+}
+
+.row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0.75rem 0;
+}
+
+.incoming,
+.session {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.banner {
+  margin: 0;
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.log {
+  margin-top: 0.75rem;
+  max-height: 160px;
+  overflow: auto;
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: var(--bg0);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.hidden {
+  display: none;
+}

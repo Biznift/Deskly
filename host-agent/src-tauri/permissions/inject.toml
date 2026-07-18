@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-inject-commands"
+description = "Allow screen info and remote input injection"
+commands.allow = ["get_screen_info", "inject_remote_event"]

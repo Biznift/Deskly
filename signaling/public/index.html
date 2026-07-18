@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskly — Host (browser test)</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="panel">
+      <p class="eyebrow">Deskly Phase 2 — Host (browser)</p>
+      <h1>Your ID</h1>
+      <p class="id" id="hostId">·········</p>
+      <p class="status" id="status">Connecting to signaling…</p>
+
+      <div class="incoming hidden" id="incoming">
+        <p>Incoming connection request</p>
+        <div class="row">
+          <button type="button" id="acceptBtn" class="primary">Accept</button>
+          <button type="button" id="rejectBtn" class="danger">Reject</button>
+        </div>
+      </div>
+
+      <div class="session hidden" id="session">
+        <p class="banner">Screen sharing active</p>
+        <div class="log" id="log"></div>
+        <button type="button" id="disconnectBtn" class="danger">Disconnect</button>
+      </div>
+    </main>
+    <script type="module" src="/host.js"></script>
+  </body>
+</html>

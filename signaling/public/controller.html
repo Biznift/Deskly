@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskly — Viewer</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      body.viewing {
+        display: block;
+        padding: 0;
+        margin: 0;
+        background: #000;
+      }
+      body.viewing .panel {
+        display: none;
+      }
+      .stage {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: #000;
+      }
+      body.viewing .stage {
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+      .stage-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.65rem 1rem;
+        background: #101820;
+        color: #e8eef6;
+        font-size: 0.9rem;
+      }
+      .stage video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="panel">
+      <p class="eyebrow">Deskly Phase 3 — Viewer + control</p>
+      <h1>Connect to host</h1>
+      <form id="connectForm" class="form">
+        <label>
+          Host ID
+          <input
+            id="hostIdInput"
+            name="hostId"
+            inputmode="numeric"
+            autocomplete="off"
+            placeholder="9-digit ID"
+            maxlength="11"
+            required
+          />
+        </label>
+        <button type="submit" class="primary">Connect</button>
+        <label style="display:flex;gap:0.5rem;align-items:center;color:var(--muted);font-size:0.9rem">
+          <input type="checkbox" id="forceRelay" />
+          Force TURN relay
+        </label>
+      </form>
+      <p class="status" id="status">Prefer the Next.js app at :3000. This page is a quick test viewer.</p>
+    </main>
+
+    <div class="stage" id="stage">
+      <div class="stage-bar">
+        <span id="stageStatus">Connecting…</span>
+        <button type="button" id="disconnectBtn" class="danger">Disconnect</button>
+      </div>
+      <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+
+    <script type="module" src="/controller.js"></script>
+  </body>
+</html>

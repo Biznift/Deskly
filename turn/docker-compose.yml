@@ -1,0 +1,21 @@
+# Coturn for Deskly TURN fallback.
+# Requires Docker. On Windows, install Docker Desktop first.
+#
+# Usage:
+#   cp .env.example .env   # edit secret + EXTERNAL_IP if needed
+#   docker compose up -d
+#
+# Then set the same TURN_SECRET on the signaling server.
+
+services:
+  coturn:
+    image: coturn/coturn:4.6.2
+    container_name: deskly-coturn
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
+      - ./entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
