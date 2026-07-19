@@ -59,7 +59,14 @@ export function buildIceConfig(opts = {}) {
   }
 
   const config = { iceServers };
-  if (opts.forceRelay) {
+  const hasTurn = iceServers.some(
+    (s) =>
+      s.username &&
+      ((typeof s.urls === "string" && String(s.urls).startsWith("turn:")) ||
+        (Array.isArray(s.urls) && s.urls.some((u) => String(u).startsWith("turn:")))),
+  );
+  // Never force relay without TURN — that guarantees ICE failure.
+  if (opts.forceRelay && hasTurn) {
     config.iceTransportPolicy = "relay";
   }
   return config;

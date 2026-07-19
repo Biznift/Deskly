@@ -5,6 +5,12 @@ export type SignalOut =
 
 export type ScreenInfo = { width: number; height: number };
 
+type InSignal = {
+  type: string;
+  sdp?: RTCSessionDescriptionInit;
+  candidate?: RTCIceCandidateInit;
+};
+
 export function createViewerPeer(opts: {
   iceServers: RTCIceServer[];
   videoEl: HTMLVideoElement;
@@ -19,6 +25,9 @@ export function createViewerPeer(opts: {
   let onSignal: (msg: SignalOut) => void = () => {};
   let onMessage: (data: string) => void = () => {};
   let onChannelOpen: () => void = () => {};
+  const pendingIce: RTCIceCandidateInit[] = [];
+  let remoteSet = false;
+  let chain: Promise<void> = Promise.resolve();
 
   pc.onicecandidate = (ev) => {
     if (ev.candidate) {
@@ -36,23 +45,43 @@ export function createViewerPeer(opts: {
     channel.onmessage = (e) => onMessage(String(e.data));
   };
 
-  async function handleSignal(msg: {
-    type: string;
-    sdp?: RTCSessionDescriptionInit;
-    candidate?: RTCIceCandidateInit;
-  }) {
+  async function flushIce() {
+    while (pendingIce.length) {
+      const c = pendingIce.shift()!;
+      try {
+        await pc.addIceCandidate(c);
+      } catch (err) {
+        console.warn("ICE add failed", err);
+      }
+    }
+  }
+
+  async function handleSignalInner(msg: InSignal) {
     if (msg.type === "offer" && msg.sdp) {
       await pc.setRemoteDescription(msg.sdp);
+      remoteSet = true;
+      await flushIce();
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       onSignal({ type: "answer", sdp: pc.localDescription! });
     } else if (msg.type === "ice" && msg.candidate) {
+      if (!remoteSet) {
+        pendingIce.push(msg.candidate);
+        return;
+      }
       try {
         await pc.addIceCandidate(msg.candidate);
       } catch (err) {
         console.warn("ICE add failed", err);
       }
     }
+  }
+
+  function handleSignal(msg: InSignal) {
+    chain = chain.then(() => handleSignalInner(msg)).catch((err) => {
+      console.warn("signal handling failed", err);
+    });
+    return chain;
   }
 
   function send(data: unknown) {

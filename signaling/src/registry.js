@@ -28,11 +28,38 @@ export function createRegistry() {
    */
   function register(id, ws) {
     const existing = hosts.get(id);
+    // Allow reclaim: same ID reconnecting replaces the previous host socket.
     if (existing && existing.ws !== ws && existing.ws.readyState === 1) {
-      return { ok: false, error: "id_in_use" };
+      try {
+        existing.ws.close();
+      } catch {
+        /* ignore */
+      }
     }
     if (existing?.pending) {
       clearTimeout(existing.pending.timeout);
+      try {
+        existing.pending.controllerWs.send(
+          JSON.stringify({
+            type: "session_ended",
+            reason: "host_reconnected",
+          }),
+        );
+      } catch {
+        /* ignore */
+      }
+    }
+    if (existing?.controllerWs) {
+      try {
+        existing.controllerWs.send(
+          JSON.stringify({
+            type: "session_ended",
+            reason: "host_reconnected",
+          }),
+        );
+      } catch {
+        /* ignore */
+      }
     }
     hosts.set(id, {
       id,

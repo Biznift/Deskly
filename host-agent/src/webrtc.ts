@@ -9,6 +9,12 @@ export type IceServer = RTCIceServer;
 
 export type InputHandler = (data: string) => void;
 
+type InSignal = {
+  type: string;
+  sdp?: RTCSessionDescriptionInit;
+  candidate?: RTCIceCandidateInit;
+};
+
 export function randomHostId(): string {
   let id = "";
   for (let i = 0; i < 9; i++) {
@@ -36,6 +42,9 @@ export function createHostPeer(
   let onSignal: (msg: SignalOut) => void = () => {};
   let onInput: InputHandler = () => {};
   let onChannelOpen: () => void = () => {};
+  const pendingIce: RTCIceCandidateInit[] = [];
+  let remoteSet = false;
+  let chain: Promise<void> = Promise.resolve();
 
   pc.onicecandidate = (ev) => {
     if (ev.candidate) {
@@ -49,14 +58,27 @@ export function createHostPeer(
     ch.onmessage = (ev) => onInput(String(ev.data));
   }
 
-  async function handleSignal(msg: {
-    type: string;
-    sdp?: RTCSessionDescriptionInit;
-    candidate?: RTCIceCandidateInit;
-  }) {
+  async function flushIce() {
+    while (pendingIce.length) {
+      const c = pendingIce.shift()!;
+      try {
+        await pc.addIceCandidate(c);
+      } catch (err) {
+        console.warn("ICE add failed", err);
+      }
+    }
+  }
+
+  async function handleSignalInner(msg: InSignal) {
     if (msg.type === "answer" && msg.sdp) {
       await pc.setRemoteDescription(msg.sdp);
+      remoteSet = true;
+      await flushIce();
     } else if (msg.type === "ice" && msg.candidate) {
+      if (!remoteSet) {
+        pendingIce.push(msg.candidate);
+        return;
+      }
       try {
         await pc.addIceCandidate(msg.candidate);
       } catch (err) {
@@ -65,25 +87,30 @@ export function createHostPeer(
     }
   }
 
-/**
+  function handleSignal(msg: InSignal) {
+    chain = chain.then(() => handleSignalInner(msg)).catch((err) => {
+      console.warn("signal handling failed", err);
+    });
+    return chain;
+  }
+
+  /**
    * Capture screen, open input DataChannel, send offer.
-   * Phase 2 uses getDisplayMedia (WebView). Native DXGI replaces this later.
-   *
-   * Security: browser WebRTC uses DTLS-SRTP for media and DTLS for DataChannel.
-   * Do not pass any option that disables encryption.
+   * Security: WebRTC uses DTLS-SRTP by default — do not disable encryption.
    */
   async function startScreenShareAndOffer() {
     localStream = await navigator.mediaDevices.getDisplayMedia({
       video: {
         frameRate: { ideal: 30, max: 30 },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
       },
       audio: false,
     });
 
     for (const track of localStream.getTracks()) {
       pc.addTrack(track, localStream);
+      track.addEventListener("ended", () => {
+        // User stopped sharing from OS UI — leave peer; main handles disconnect.
+      });
     }
 
     channel = pc.createDataChannel("deskly-input", { ordered: true });
@@ -130,5 +157,138 @@ export function createHostPeer(
     startScreenShareAndOffer,
     send,
     close,
+  };
+}
+
+/** Controller/viewer peer: receive remote screen + send input. */
+export function createViewerPeer(
+  iceServers: IceServer[],
+  videoEl: HTMLVideoElement,
+  iceTransportPolicy?: RTCIceTransportPolicy,
+) {
+  const pc = new RTCPeerConnection({
+    iceServers,
+    ...(iceTransportPolicy ? { iceTransportPolicy } : {}),
+  });
+  let channel: RTCDataChannel | null = null;
+  let onSignal: (msg: SignalOut) => void = () => {};
+  let onMessage: (data: string) => void = () => {};
+  let onChannelOpen: () => void = () => {};
+  const pendingIce: RTCIceCandidateInit[] = [];
+  let remoteSet = false;
+  let chain: Promise<void> = Promise.resolve();
+
+  pc.onicecandidate = (ev) => {
+    if (ev.candidate) {
+      onSignal({ type: "ice", candidate: ev.candidate.toJSON() });
+    }
+  };
+
+  pc.ontrack = (ev) => {
+    videoEl.srcObject = ev.streams[0] ?? new MediaStream([ev.track]);
+  };
+
+  pc.ondatachannel = (ev) => {
+    channel = ev.channel;
+    channel.onopen = () => onChannelOpen();
+    channel.onmessage = (e) => onMessage(String(e.data));
+  };
+
+  async function flushIce() {
+    while (pendingIce.length) {
+      const c = pendingIce.shift()!;
+      try {
+        await pc.addIceCandidate(c);
+      } catch (err) {
+        console.warn("ICE add failed", err);
+      }
+    }
+  }
+
+  async function handleSignalInner(msg: InSignal) {
+    if (msg.type === "offer" && msg.sdp) {
+      await pc.setRemoteDescription(msg.sdp);
+      remoteSet = true;
+      await flushIce();
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      onSignal({ type: "answer", sdp: pc.localDescription! });
+    } else if (msg.type === "ice" && msg.candidate) {
+      if (!remoteSet) {
+        pendingIce.push(msg.candidate);
+        return;
+      }
+      try {
+        await pc.addIceCandidate(msg.candidate);
+      } catch (err) {
+        console.warn("ICE add failed", err);
+      }
+    }
+  }
+
+  function handleSignal(msg: InSignal) {
+    chain = chain.then(() => handleSignalInner(msg)).catch((err) => {
+      console.warn("signal handling failed", err);
+    });
+    return chain;
+  }
+
+  function send(data: unknown) {
+    if (channel?.readyState === "open") {
+      channel.send(typeof data === "string" ? data : JSON.stringify(data));
+    }
+  }
+
+  function close() {
+    try {
+      channel?.close();
+    } catch {
+      /* ignore */
+    }
+    channel = null;
+    videoEl.srcObject = null;
+    pc.close();
+  }
+
+  return {
+    pc,
+    setOnSignal(fn: (msg: SignalOut) => void) {
+      onSignal = fn;
+    },
+    setOnMessage(fn: (data: string) => void) {
+      onMessage = fn;
+    },
+    setOnChannelOpen(fn: () => void) {
+      onChannelOpen = fn;
+    },
+    handleSignal,
+    send,
+    close,
+  };
+}
+
+export function digitsOnly(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+/** Map pointer inside a video (object-fit: contain) to normalized 0–1. */
+export function videoNormCoords(
+  videoEl: HTMLVideoElement,
+  clientX: number,
+  clientY: number,
+): { x: number; y: number } {
+  const rect = videoEl.getBoundingClientRect();
+  const vw = videoEl.videoWidth || 1;
+  const vh = videoEl.videoHeight || 1;
+  const scale = Math.min(rect.width / vw, rect.height / vh);
+  const contentW = vw * scale;
+  const contentH = vh * scale;
+  const offsetX = rect.left + (rect.width - contentW) / 2;
+  const offsetY = rect.top + (rect.height - contentH) / 2;
+  const x = (clientX - offsetX) / contentW;
+  const y = (clientY - offsetY) / contentH;
+  return {
+    x: Math.min(1, Math.max(0, x)),
+    y: Math.min(1, Math.max(0, y)),
   };
 }

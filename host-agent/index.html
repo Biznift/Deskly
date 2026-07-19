@@ -8,22 +8,53 @@
     <script type="module" src="/src/main.ts" defer></script>
   </head>
   <body>
-    <main class="panel">
-      <p class="eyebrow">Deskly Host</p>
-      <h1>Your ID</h1>
-      <p class="id" id="hostId">·········</p>
-      <p class="hint">Share this ID. You must Accept before anyone can see your screen.</p>
-      <p class="status" id="status">Starting…</p>
+    <div id="home" class="home">
+      <header class="top">
+        <p class="brand">Deskly</p>
+        <p class="status" id="status">Starting…</p>
+      </header>
 
-      <label class="field">
-        Signaling server
-        <input id="signalUrl" value="ws://127.0.0.1:8080" spellcheck="false" />
-      </label>
-      <button type="button" id="reconnectBtn" class="ghost">Reconnect</button>
+      <div class="split">
+        <section class="card">
+          <p class="card-label">This Desk</p>
+          <h1>Your ID</h1>
+          <p class="id" id="hostId">·········</p>
+          <p class="hint">
+            Share this ID so others can connect to you. You must Accept first.
+          </p>
+        </section>
+
+        <section class="card">
+          <p class="card-label">Remote Desk</p>
+          <h1>Connect to</h1>
+          <form id="remoteForm" class="remote-form">
+            <input
+              id="remoteIdInput"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="Remote ID"
+              maxlength="11"
+              required
+            />
+            <button type="submit" id="connectBtn" class="primary">Connect</button>
+          </form>
+          <p class="hint">
+            Enter another Deskly ID to control that PC (like AnyDesk).
+          </p>
+        </section>
+      </div>
+
+      <details class="advanced">
+        <summary>Signaling server</summary>
+        <label class="field">
+          <input id="signalUrl" value="ws://127.0.0.1:8080" spellcheck="false" />
+        </label>
+        <button type="button" id="reconnectBtn" class="ghost">Reconnect</button>
+      </details>
 
       <div class="incoming hidden" id="incoming">
         <p class="incoming-title">Incoming connection</p>
-        <p class="hint">Someone wants to view your screen.</p>
+        <p class="hint">Someone wants to control this PC.</p>
         <div class="row">
           <button type="button" id="acceptBtn" class="primary">Accept</button>
           <button type="button" id="rejectBtn" class="danger">Reject</button>
@@ -31,10 +62,23 @@
       </div>
 
       <div class="session hidden" id="session">
-        <p class="banner">Screen sharing active</p>
-        <p class="hint" id="sessionHint">A top-of-screen overlay stays visible with Disconnect.</p>
-        <button type="button" id="disconnectBtn" class="danger">Disconnect</button>
+        <p class="banner">You are sharing your screen</p>
+        <p class="hint" id="sessionHint">Disconnect anytime from the top overlay.</p>
+        <button type="button" id="disconnectHostBtn" class="danger">
+          Disconnect
+        </button>
       </div>
-    </main>
+    </div>
+
+    <div id="viewer" class="viewer hidden">
+      <header class="viewer-bar">
+        <span class="brand">Deskly</span>
+        <span id="viewerStatus">Connecting…</span>
+        <button type="button" id="disconnectRemoteBtn" class="danger">
+          Disconnect
+        </button>
+      </header>
+      <video id="remoteVideo" autoplay playsinline muted></video>
+    </div>
   </body>
 </html>
