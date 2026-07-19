@@ -33,7 +33,8 @@ export async function showSessionOverlay(): Promise<void> {
     x,
     y,
     decorations: false,
-    transparent: true,
+    // Solid window (not transparent) so macOS DMG builds stay reliable.
+    transparent: false,
     alwaysOnTop: true,
     skipTaskbar: true,
     resizable: false,
@@ -41,7 +42,7 @@ export async function showSessionOverlay(): Promise<void> {
     minimizable: false,
     focus: true,
     visible: true,
-    shadow: false,
+    shadow: true,
   });
 
   overlay.once("tauri://error", (e) => {

@@ -50,7 +50,17 @@
           <input id="signalUrl" value="ws://127.0.0.1:8080" spellcheck="false" />
         </label>
         <button type="button" id="reconnectBtn" class="ghost">Reconnect</button>
+        <p class="hint">
+          Same PC: <code>ws://127.0.0.1:8080</code> · Other device on Wi‑Fi: use this
+          PC’s LAN IP, e.g. <code>ws://192.168.0.103:8080</code>
+        </p>
       </details>
+
+      <p class="mac-tip hidden" id="macTip">
+        macOS: allow <strong>Screen Recording</strong> and <strong>Accessibility</strong>
+        for Deskly in System Settings → Privacy &amp; Security (needed to share screen and
+        receive remote mouse/keyboard).
+      </p>
 
       <div class="incoming hidden" id="incoming">
         <p class="incoming-title">Incoming connection</p>

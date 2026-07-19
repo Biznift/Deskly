@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>NSScreenCaptureUsageDescription</key>
+  <string>Deskly needs screen recording permission to share your desktop with a remote helper.</string>
+  <key>NSAppleEventsUsageDescription</key>
+  <string>Deskly may use system events to inject mouse and keyboard input while you are being helped.</string>
+</dict>
+</plist>

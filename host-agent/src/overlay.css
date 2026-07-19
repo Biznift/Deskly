@@ -2,7 +2,7 @@ html,
 body {
   margin: 0;
   overflow: hidden;
-  background: transparent;
+  background: #101820;
   font-family: "Segoe UI", system-ui, sans-serif;
   user-select: none;
 }
@@ -17,9 +17,8 @@ body {
   padding: 0 0.85rem 0 1rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(16, 24, 32, 0.94);
+  background: #162232;
   color: #e8eef6;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 }
 
 .text {

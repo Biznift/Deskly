@@ -1,33 +1,57 @@
 # Deskly
 
-Lightweight remote desktop control — screen view + mouse/keyboard only.
+Lightweight remote desktop — screen view + mouse/keyboard only (AnyDesk-style ID + Accept).
 
 ## Components
 
 | Path | Role |
 |------|------|
-| `signaling/` | WebSocket signaling (ID + Accept/Reject, ICE/TURN config) |
-| `host-agent/` | Tauri host app (share screen, inject input, disconnect overlay) |
-| `controller/` | Next.js controller (connect by host ID) |
-| `turn/` | coturn Docker config for TURN fallback |
+| [`signaling/`](signaling/) | WebSocket signaling (register, Accept/Reject, ICE/TURN) |
+| [`host-agent/`](host-agent/) | Tauri app — your ID + connect to remote ID |
+| [`controller/`](controller/) | Optional Next.js web controller |
+| [`turn/`](turn/) | coturn Docker config (optional TURN) |
 
-## Quick start (local)
+## Quick start (same PC)
 
 ```bash
 # 1. Signaling
 cd signaling && npm install && npm start
 
-# 2. Controller
-cd controller && npm install && npm run dev
-
-# 3. Host
-cd host-agent && npm install && npm run tauri dev
+# 2. Deskly desktop app
+cd host-agent && npm install && npm run tauri:dev
 ```
 
-- Signaling: http://localhost:8080  
-- Controller: http://localhost:3000  
-- Host shows a 9-digit ID → controller connects → host **Accepts**
+- Share **Your ID**, or enter a remote ID under **Remote Desk → Connect**
+- Host must **Accept** before screen share starts
+
+Web controller (optional): `cd controller && npm run dev` → http://localhost:3000
+
+## Two devices (same Wi‑Fi)
+
+1. On PC A run signaling + Deskly  
+2. Note PC A LAN IP (e.g. `192.168.0.103`)  
+3. On PC B open Deskly → Advanced → `ws://192.168.0.103:8080` → Reconnect  
+4. Connect using the other machine’s ID → Accept  
+
+## Build installers
+
+### Windows → `.exe`
+
+```bash
+cd host-agent
+npm run tauri:build
+```
+
+### macOS → `.dmg` (must build on a Mac)
+
+```bash
+cd host-agent
+npm install
+npm run tauri:build
+```
+
+See [`host-agent/README.md`](host-agent/README.md) for output paths and macOS permissions.
 
 ## TURN (optional)
 
-See [`turn/README.md`](turn/README.md). Set matching `TURN_URLS` / `TURN_SECRET` in `signaling/.env`.
+See [`turn/README.md`](turn/README.md). Set `TURN_URLS` / `TURN_SECRET` in `signaling/.env`.

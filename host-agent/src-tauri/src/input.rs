@@ -1,10 +1,11 @@
+use display_info::DisplayInfo;
 use enigo::{
     Button, Coordinate, Direction, Enigo, Key, Keyboard, Mouse, Settings,
 };
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
-#[serde(tag = "type", rename_all = "lowercase")]
+#[serde(tag = "type")]
 pub enum RemoteInputEvent {
     #[serde(rename = "mousemove")]
     MouseMove { x: f64, y: f64 },
@@ -36,33 +37,25 @@ pub enum RemoteInputEvent {
 }
 
 fn primary_screen_size() -> Result<(i32, i32), String> {
-    #[cfg(windows)]
-    {
-        #[link(name = "user32")]
-        unsafe extern "system" {
-            fn GetSystemMetrics(n_index: i32) -> i32;
-        }
-        const SM_CXSCREEN: i32 = 0;
-        const SM_CYSCREEN: i32 = 1;
-        unsafe {
-            let w = GetSystemMetrics(SM_CXSCREEN);
-            let h = GetSystemMetrics(SM_CYSCREEN);
-            if w <= 0 || h <= 0 {
-                return Err("GetSystemMetrics failed".into());
-            }
-            Ok((w, h))
-        }
+    let displays = DisplayInfo::all().map_err(|e| e.to_string())?;
+    let display = displays
+        .iter()
+        .find(|d| d.is_primary)
+        .or_else(|| displays.first())
+        .ok_or_else(|| "No display found".to_string())?;
+
+    let w = display.width as i32;
+    let h = display.height as i32;
+    if w <= 0 || h <= 0 {
+        return Err("Invalid display size".into());
     }
-    #[cfg(not(windows))]
-    {
-        Err("Screen size only implemented on Windows for MVP".into())
-    }
+    Ok((w, h))
 }
 
 fn norm_to_pixels(x: f64, y: f64) -> Result<(i32, i32), String> {
     let (sw, sh) = primary_screen_size()?;
-    let px = (x.clamp(0.0, 1.0) * f64::from(sw - 1)).round() as i32;
-    let py = (y.clamp(0.0, 1.0) * f64::from(sh - 1)).round() as i32;
+    let px = (x.clamp(0.0, 1.0) * f64::from((sw - 1).max(1))).round() as i32;
+    let py = (y.clamp(0.0, 1.0) * f64::from((sh - 1).max(1))).round() as i32;
     Ok((px, py))
 }
 
@@ -109,10 +102,9 @@ fn map_key(key: &str, code: &str) -> Option<Key> {
         "F11" => Key::F11,
         "F12" => Key::F12,
         other => {
-            // KeyA → 'a', Digit1 → use key char, or single Unicode key
             if let Some(ch) = key.chars().next() {
                 if key.chars().count() == 1 {
-                    return Some(Key::Unicode(ch.to_ascii_lowercase()));
+                    return Some(Key::Unicode(ch));
                 }
             }
             if other.starts_with("Key") && other.len() == 4 {
@@ -182,7 +174,6 @@ pub fn inject_event(event: RemoteInputEvent) -> Result<(), String> {
             let (px, py) = norm_to_pixels(x, y)?;
             with_enigo(|e| {
                 e.move_mouse(px, py, Coordinate::Abs)?;
-                // Browser: positive deltaY = scroll down. Enigo vertical: positive = up.
                 let lines_y = (-delta_y / 100.0).round() as i32;
                 let lines_x = (delta_x / 100.0).round() as i32;
                 if lines_y != 0 {

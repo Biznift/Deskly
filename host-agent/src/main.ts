@@ -37,6 +37,24 @@ const disconnectRemoteBtn =
 const myId = randomHostId();
 hostIdEl.textContent = formatId(myId);
 
+const SIGNAL_KEY = "deskly.signalUrl";
+const savedSignal = localStorage.getItem(SIGNAL_KEY);
+if (savedSignal) {
+  signalUrlEl.value = savedSignal;
+}
+signalUrlEl.addEventListener("change", () => {
+  localStorage.setItem(SIGNAL_KEY, signalUrlEl.value.trim());
+});
+
+const macTip = document.querySelector<HTMLElement>("#macTip");
+if (
+  macTip &&
+  (/Mac|iPhone|iPod|iPad/i.test(navigator.platform) ||
+    navigator.userAgent.includes("Mac"))
+) {
+  macTip.classList.remove("hidden");
+}
+
 /** Always registered so others can connect to us (This Desk). */
 let hostWs: WebSocket | null = null;
 /** Outbound connection to someone else's ID (Remote Desk). */
